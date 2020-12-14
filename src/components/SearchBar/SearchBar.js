@@ -1,16 +1,11 @@
 import React, {Component} from 'react';
 import {TextInput, TouchableOpacity, View} from 'react-native';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import axios from 'axios';
-
 import { connect } from 'react-redux';
-import { searchResults, loading } from "../../actions";
+import { searchResults, loading, typing } from "../../actions";
+import  ApiController  from "../../controllers/ApiController";
 import  HOC  from "../HOC";
-
-
 const styles = require('./SearchBarStyles');
-const apiURL = 'https://itunes.apple.com/search'
-
 const Spinner = HOC(View);
 
 
@@ -18,29 +13,20 @@ class SearchBar extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      searchTerm: '',
+      limit:20
     }
   }
  
   onSearch = () => {
     this.props.loading(true);
-
-    let URL = apiURL + '?term=' + this.state.searchTerm;
-    axios.get(URL, {
-      method: 'GET',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      }
-    }).then((response) => {
+    ApiController.onSearch(this.props.searchTerm, this.state.limit,  (response)=>{
       console.log(JSON.stringify(response))
       this.props.loading(false);
       this.props.searchResults(response.data.results);
-    }).catch((error) => {
-      console.log(error)
-      this.props.loading(false);
-
-    });
+    }, (error)=>{
+        console.log(error)
+        this.props.loading(false);
+    })
   }
 
   render() {
@@ -50,8 +36,9 @@ class SearchBar extends Component {
           placeholder='Enter your search terms'
           style={styles.textInputSearch}
           underlineColorAndroid={'transparent'}
-          onChangeText={(searchTerm) => this.setState({ searchTerm })}
-          value={this.state.searchTerm}
+          onChangeText={(searchTerm) => this.props.typing(searchTerm)}
+          value={this.props.searchTerm}
+          placeholderTextColor="#fff"
         />
         <TouchableOpacity
           style={styles.textSearchButton}
@@ -64,4 +51,10 @@ class SearchBar extends Component {
   }
 }
 
-export default connect(null, {searchResults, loading})(SearchBar);
+function mapStateToProps(state) {
+  return {
+    searchTerm: state.results.searchTerm
+  };
+}
+
+export default connect(mapStateToProps, {searchResults, loading, typing})(SearchBar);

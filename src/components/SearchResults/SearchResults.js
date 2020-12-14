@@ -1,46 +1,71 @@
 import React, {Component} from 'react';
-import {Linking, Text, TouchableOpacity, ScrollView, FlatList} from 'react-native';
-
+import {View, Text, Image, FlatList, TouchableOpacity} from 'react-native';
+import { searchResults, loading, typing } from "../../actions";
 import {connect} from 'react-redux';
+import  ApiController  from "../../controllers/ApiController";
 
 const styles = require('./SearchResultsStyles');
 
 class SearchResults extends Component {
   constructor(props) {
     super(props);
+    this.state={
+      isShow:false
+    }
+  }
+
+  loadMore(){
+    this.setState({isShow:false})
+    this.props.loading(true);
+    ApiController.onSearch(this.props.searchTerm, "20",  (response)=>{
+      console.log(JSON.stringify(response))
+      this.props.loading(false);
+      this.props.searchResults([...this.props.results, ...response.data.results]);
+    }, (error)=>{
+        console.log(error)
+        this.props.loading(false);
+    })
   }
 
    ItemView = ({item}) => {
     return (
       // Flat List Item
-      <TouchableOpacity 
-            onPress={() => { Linking.openURL(item.trackViewUrl) }}
-            style={styles.resultLink}
-          >
-            <Text>Artist : {item.artistName}</Text>
-            <Text style={{paddingTop:5}}>Track : {item.trackName}</Text>
-
-      </TouchableOpacity>
+      <View style={styles.itemContainer}>
+             <Image 
+              source = {{uri:item.image_url}}
+              style ={styles.image}
+            /> 
+            <Text style={styles.title}  numberOfLines={1}>{item.title}</Text>
+      </View>
     );
   };
 
   render() {
     return(
-      <ScrollView style={styles.searchResultsContainer}>
+      <>
           <FlatList
             data={this.props.results}
             keyExtractor={(item, index) => index.toString()}
             renderItem={this.ItemView}
+            numColumns={3}
+            columnWrapperStyle={{justifyContent: 'space-between'}} 
+            onEndReached={()=>this.setState({isShow:true})}
+            onEndThreshold={0}
           />
-      </ScrollView>
+          {(this.state.isShow == true)&&
+          <TouchableOpacity onPress={()=>this.loadMore()} style={{margin:10}}> 
+            <Text style={{color:"#fff"}}>Load More</Text>
+          </TouchableOpacity> }
+       </>  
     )
   }
 }
 
 function mapStateToProps(state) {
   return {
-    results: state.results.searchResults
+    results: state.results.searchResults,
+    searchTerm: state.results.searchTerm
   };
 }
 
-export default connect(mapStateToProps, null)(SearchResults);
+export default connect(mapStateToProps, {searchResults, loading})(SearchResults);

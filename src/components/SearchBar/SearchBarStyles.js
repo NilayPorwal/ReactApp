@@ -3,12 +3,9 @@ const { Dimensions, StyleSheet } = React;
 
 module.exports = StyleSheet.create({
   searchBarContainer: {
-    width:"100%",
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    height: 50,
-    borderBottomWidth: 2,
     marginVertical: 10,
     borderColor: 'lightgray',
     padding:10
@@ -20,7 +17,8 @@ module.exports = StyleSheet.create({
     borderRadius: 5,
     marginRight: 10,
     height: 40,
-    paddingLeft: 10
+    paddingLeft: 10,
+    color:"#fff"
   },
   textSearchButton: {
     flex: 1,

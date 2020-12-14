@@ -1,13 +1,15 @@
 import {combineReducers} from 'redux';
 import {
   SEARCH_RESULTS,
-  LOADING
+  LOADING,
+  TYPING
 } from "../actions";
 
 const initialState ={
   loading:false,
-  searchResults:[]
-  
+  searchResults:[],
+  searchTerm:'',
+  limit:20
 }
 
 function results(state = initialState, action) {
@@ -16,6 +18,8 @@ function results(state = initialState, action) {
       return {...state, searchResults:action.results};
     case LOADING:
         return {...state, loading:action.value};  
+    case TYPING:
+      return {...state, searchTerm:action.value};     
     default:
       return initialState;
   }
